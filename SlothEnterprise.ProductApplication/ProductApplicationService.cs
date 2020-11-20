@@ -48,6 +48,7 @@ namespace SlothEnterprise.ProductApplication
             
         }
 
+
         private int HandleConfidentialInvoiceDiscount(ConfidentialInvoiceDiscount cid, ICompanyData company)
         {
             int result;
