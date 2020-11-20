@@ -21,6 +21,11 @@ namespace SlothEnterprise.ProductApplication
             _businessLoansService = businessLoansService;
         }
 
+        /// <summary>
+        /// Submit an application
+        /// </summary>
+        /// <param name="application">The application being submitted</param>
+        /// <returns>The application ID if successful; -1 otherwise</returns>
         public int SubmitApplicationFor(ISellerApplication application)
         {
             int result;

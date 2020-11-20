@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SlothEnterprise.ProductApplication.Constants
+﻿namespace SlothEnterprise.ProductApplication.Constants
 {
     public static class DefaultValues
     {

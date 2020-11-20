@@ -1,8 +1,5 @@
 ﻿using SlothEnterprise.External;
 using SlothEnterprise.ProductApplication.Applications;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SlothEnterprise.ProductApplication.Company
 {
