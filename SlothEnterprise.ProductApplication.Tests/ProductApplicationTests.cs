@@ -57,7 +57,7 @@ namespace SlothEnterprise.ProductApplication.Tests
                     InvoiceAmount = 20M,
                     AdvancePercentage = 0.5M
                 },
-                CompanyData = new Company
+                CompanyData = new CompanyData
                 {
                     Number = 1
                 }
@@ -86,7 +86,7 @@ namespace SlothEnterprise.ProductApplication.Tests
                     TotalLedgerNetworth = 100,
                     AdvancePercentage = 1
                 },
-                CompanyData = new Company
+                CompanyData = new CompanyData
                 {
                     Number = 2
                 }
@@ -120,7 +120,7 @@ namespace SlothEnterprise.ProductApplication.Tests
                     InterestRatePerAnnum = 1.5M
 
                 },
-                CompanyData = new Company
+                CompanyData = new CompanyData
                 {
                     Number = 3
                 }

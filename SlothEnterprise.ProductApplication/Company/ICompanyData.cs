@@ -2,7 +2,7 @@
 
 namespace SlothEnterprise.ProductApplication.Applications
 {
-    public interface ICompany
+    public interface ICompanyData
     {
         string Name { get; set; }
         int Number { get; set; }
