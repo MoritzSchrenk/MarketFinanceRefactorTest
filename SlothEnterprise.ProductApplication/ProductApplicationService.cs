@@ -2,6 +2,7 @@
 using SlothEnterprise.External;
 using SlothEnterprise.External.V1;
 using SlothEnterprise.ProductApplication.Applications;
+using SlothEnterprise.ProductApplication.Company;
 using SlothEnterprise.ProductApplication.Products;
 
 namespace SlothEnterprise.ProductApplication
@@ -12,7 +13,8 @@ namespace SlothEnterprise.ProductApplication
         private readonly IConfidentialInvoiceService _confidentialInvoiceWebService;
         private readonly IBusinessLoansService _businessLoansService;
 
-        public ProductApplicationService(ISelectInvoiceService selectInvoiceService, IConfidentialInvoiceService confidentialInvoiceWebService, IBusinessLoansService businessLoansService)
+        public ProductApplicationService(ISelectInvoiceService selectInvoiceService, 
+            IConfidentialInvoiceService confidentialInvoiceWebService, IBusinessLoansService businessLoansService)
         {
             _selectInvoiceService = selectInvoiceService;
             _confidentialInvoiceWebService = confidentialInvoiceWebService;
@@ -21,43 +23,68 @@ namespace SlothEnterprise.ProductApplication
 
         public int SubmitApplicationFor(ISellerApplication application)
         {
+            int result;
 
-            if (application.Product is SelectiveInvoiceDiscount sid)
+            switch (application.Product)
             {
-                return _selectInvoiceService.SubmitApplicationFor(application.CompanyData.Number.ToString(), sid.InvoiceAmount, sid.AdvancePercentage);
+                case SelectiveInvoiceDiscount sid:
+                    result = _selectInvoiceService.SubmitApplicationFor(
+                                application.CompanyData.Number.ToString(), sid.InvoiceAmount, sid.AdvancePercentage);
+                    break;
+
+                case ConfidentialInvoiceDiscount cid:
+                    result = HandleConfidentialInvoiceDiscount(cid, application.CompanyData);
+                    break;
+
+                case BusinessLoans loans:
+                    result = HandleBusinessLoan(loans, application.CompanyData);
+                    break;
+
+                default:
+                    throw new ArgumentException("Unknown application type");
             }
 
-            if (application.Product is ConfidentialInvoiceDiscount cid)
+            return result;
+            
+        }
+
+        private int HandleConfidentialInvoiceDiscount(ConfidentialInvoiceDiscount cid, ICompanyData company)
+        {
+            int result;
+
+            var companyDataRequest = company.ToCompanyDataRequest();
+
+            var applicationResult = _confidentialInvoiceWebService.SubmitApplicationFor(
+                                        companyDataRequest, cid.TotalLedgerNetworth, cid.AdvancePercentage, cid.VatRate);
+
+            if (applicationResult.Success && applicationResult.ApplicationId.HasValue)
+                result = applicationResult.ApplicationId.Value;
+            else
+                result = -1;
+
+            return result;
+        }
+
+        private int HandleBusinessLoan(BusinessLoans loans, ICompanyData company)
+        {
+            int result;
+
+            var companyDataRequest = company.ToCompanyDataRequest();
+
+            var loansRequest = new LoansRequest
             {
-                var result = _confidentialInvoiceWebService.SubmitApplicationFor(
-                    new CompanyDataRequest
-                    {
-                        CompanyFounded = application.CompanyData.Founded,
-                        CompanyNumber = application.CompanyData.Number,
-                        CompanyName = application.CompanyData.Name,
-                        DirectorName = application.CompanyData.DirectorName
-                    }, cid.TotalLedgerNetworth, cid.AdvancePercentage, cid.VatRate);
+                InterestRatePerAnnum = loans.InterestRatePerAnnum,
+                LoanAmount = loans.LoanAmount
+            };
 
-                return (result.Success) ? result.ApplicationId ?? -1 : -1;
-            }
+            var applicationResult = _businessLoansService.SubmitApplicationFor(companyDataRequest, loansRequest);
 
-            if (application.Product is BusinessLoans loans)
-            {
-                var result = _businessLoansService.SubmitApplicationFor(new CompanyDataRequest
-                {
-                    CompanyFounded = application.CompanyData.Founded,
-                    CompanyNumber = application.CompanyData.Number,
-                    CompanyName = application.CompanyData.Name,
-                    DirectorName = application.CompanyData.DirectorName
-                }, new LoansRequest
-                {
-                    InterestRatePerAnnum = loans.InterestRatePerAnnum,
-                    LoanAmount = loans.LoanAmount
-                });
-                return (result.Success) ? result.ApplicationId ?? -1 : -1;
-            }
+            if (applicationResult.Success && applicationResult.ApplicationId.HasValue)
+                result = applicationResult.ApplicationId.Value;
+            else
+                result = -1;
 
-            throw new InvalidOperationException();
+            return result;
         }
     }
 }
